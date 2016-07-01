@@ -160,6 +160,14 @@ def person_ids_by_name(rpc, name):
     return [x['id'] for x in people]
 
 
+def _submitter_name(submitter):
+    return unicode(submitter).encode('utf-8').split(" <", 1)[0]
+
+
+def _submitter_email(submitter):
+    return unicode(submitter).encode('utf-8').split(" <", 1)[1][:-1]
+
+
 def list_patches(patches, format_str=None):
     """Dump a list of patches to stdout."""
     if format_str:
@@ -179,12 +187,11 @@ def list_patches(patches, format_str=None):
         for patch in patches:
             print(format_field_re.sub(patch_field, format_str))
     else:
-        print("%-7s %-12s %s" % ("ID", "State", "Name"))
-        print("%-7s %-12s %s" % ("--", "-----", "----"))
+        print("%-7s  %-10s  %-30s  %-12s %s" % ("ID", "Date", "Submitter", "State", "Name"))
+        print("%-7s  %-10s  %-30s  %-12s %s" % ("--", "----", "---------", "-----", "----"))
         for patch in patches:
-            print("%-7d %-12s %s" %
-                  (patch['id'], patch['state'], patch['name']))
-
+            print("%-7d  %-10s  %-30s  %-12s %s" %
+                  (patch['id'], patch['date'].split(" ", 1)[0], _submitter_name(patch['submitter']), patch['state'], patch['name']))
 
 def action_list(rpc, filter, submitter_str, delegate_str, format_str=None):
     filter.resolve_ids(rpc)
@@ -228,10 +235,12 @@ def action_list(rpc, filter, submitter_str, delegate_str, format_str=None):
 
 def action_projects(rpc):
     projects = rpc.project_list("", 0)
-    print("%-5s %-24s %s" % ("ID", "Name", "Description"))
-    print("%-5s %-24s %s" % ("--", "----", "-----------"))
+    print("%-5si  %-10s  %-30s  %-24s %s" % ("ID", "Date", "Submitter", "Name", "Description"))
+    print("%-5s  %-10s  %-30s  %-24s %s" %  ("--", "----", "---------", "----", "-----------"))
     for project in projects:
-        print("%-5d %-24s %s" % (project['id'],
+        print("%-5d  %-10s  %-30s  %-24s %s" % (project['id'],
+                                 project['date'].split(" ", 1)[0],
+                                 _submitter_name(project['submitter']),
                                  project['linkname'],
                                  project['name']))
 
